@@ -1,24 +1,27 @@
 # myapp/api.py
+from tastypie import fields
 from tastypie.resources import Resource
+from tastypie.authorization import Authorization
 
 
-# Train object to shove data in/get data from.
-class RiakObject(object):
-"""
-url = 'http://mobile.viaggiatreno.it/vt_pax_internet/mobile/numero?numeroTreno=9704&tipoRicerca=numero&lang=EN'
-page = parse(url)
-
-# nome 
-page.xpath('//h1/text()')
-
-# partenza, prossima fermata, arrivo 
-page.xpath('//h2/text()')
-"""
+class ViaggiaTreno(object):
+    """
+    Train to shove data from.
+    """
     def __init__(self, initial=None):
-        self.__dict__['_data'] = {}
+        from lxml.html import parse
+        url = 'http://mobile.viaggiatreno.it/vt_pax_internet/mobile/numero?numeroTreno=9704&tipoRicerca=numero&lang=EN'
+        page = parse(url)
 
-        if hasattr(initial, 'items'):
-            self.__dict__['_data'] = initial
+        self.__dict__['_train'] = {} 
+
+        # nome 
+        self.__dict__['_train']['name'] = page.xpath('//h1/text()')
+
+        # partenza, arrivo 
+        a = page.xpath('//h2/text()')
+        self.__dict__['_train']['departure'] = a[0]
+        self.__dict__['_train']['arrival'] = a[-1]
 
     def __getattr__(self, name):
         return self._data.get(name, None)
@@ -29,12 +32,18 @@ page.xpath('//h2/text()')
 
 class Train(Resource):
     name = fields.CharField(attribute='name')
-    departure =
-    arrival = 
+    departure = fields.CharField(attribute='departure')
+    arrival = fields.CharField(attribute='arrival') 
 
-    departure_time =
-    arrival_time = 
-    delay = 
+    #departure_time =
+    #arrival_time = 
+    #delay = 
+
+    class Meta:
+        resource_name = 'train'
+        object_class = ViaggiaTreno
+        authorization = Authorization()
+    
 
     def detail_uri_kwargs(self, bundle_or_obj):
         pass

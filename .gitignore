@@ -1,0 +1,5 @@
+*.pyc
+*.swp
+*.mo
+myenv/
+my/collectstatic/*
