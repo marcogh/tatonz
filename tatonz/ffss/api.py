@@ -14,25 +14,21 @@ class ViaggiaTreno(object):
         url = self.createurl()
         page = parse(url)
 
-        self.__dict__['_train'] = {} 
+        self._train = {} 
 
         # nome 
-        self.__dict__['_train']['name'] = page.xpath('//h1/text()')
+        self.name = page.xpath('//h1/text()')
 
         # partenza, arrivo 
         a = page.xpath('//h2/text()')
-        self.__dict__['_train']['departure'] = a[0]
-        self.__dict__['_train']['arrival'] = a[-1]
+        self.departure = a[0]
+        self.arrival = a[-1]
 
     def createurl(self):
         return 'http://mobile.viaggiatreno.it/vt_pax_internet/mobile/numero?numeroTreno=%s&tipoRicerca=numero&lang=EN' % self.name 
 
     def __getattr__(self, name):
-        return self._data.get(name, None)
-
-    def to_dict(self):
-        return self._data
-
+        return self.get(name, None)
 
 class Train(Resource):
     name = fields.CharField(attribute='name')
