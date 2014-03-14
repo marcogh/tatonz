@@ -4,7 +4,7 @@ from tastypie.resources import Resource
 from tastypie.authorization import Authorization
 
 
-class ViaggiaTreno(object):
+class Scraper(object):
     """
     Train to shove data from.
     """
