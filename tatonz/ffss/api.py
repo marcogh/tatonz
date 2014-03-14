@@ -8,9 +8,10 @@ class ViaggiaTreno(object):
     """
     Train to shove data from.
     """
-    def __init__(self, initial=None):
+    def __init__(self, name=None):
         from lxml.html import parse
-        url = 'http://mobile.viaggiatreno.it/vt_pax_internet/mobile/numero?numeroTreno=9704&tipoRicerca=numero&lang=EN'
+        self.name = name 
+        url = self.createurl()
         page = parse(url)
 
         self.__dict__['_train'] = {} 
@@ -22,6 +23,9 @@ class ViaggiaTreno(object):
         a = page.xpath('//h2/text()')
         self.__dict__['_train']['departure'] = a[0]
         self.__dict__['_train']['arrival'] = a[-1]
+
+    def createurl(self):
+        return 'http://mobile.viaggiatreno.it/vt_pax_internet/mobile/numero?numeroTreno=%s&tipoRicerca=numero&lang=EN' % self.name 
 
     def __getattr__(self, name):
         return self._data.get(name, None)
