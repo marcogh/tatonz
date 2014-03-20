@@ -4,6 +4,11 @@ from tastypie.resources import Resource
 from tastypie.authorization import Authorization
 from tastypie.bundle import Bundle
 
+import logging                                                                  
+logging.basicConfig(                                                            
+    level = logging.DEBUG,                                                      
+    format = '%(asctime)s %(levelname)s %(message)s',                           
+)                                                                               
 
 
 class Scraper(object):
@@ -11,7 +16,7 @@ class Scraper(object):
     Train to shove data from.
     train numbers: 9704, 9708
     """
-    def __init__(self, pk=None):
+    def __init__(self, pk):
         from lxml.html import parse
         self._train = {} 
         self.__dict__['_train']['pk'] = pk 
@@ -24,8 +29,8 @@ class Scraper(object):
 
         # partenza, arrivo 
         a = page.xpath('//h2/text()')
-        #self.__dict__['_train']['departure'] = a[0]
-        #self.__dict__['_train']['arrival'] = a[-1]
+        self.__dict__['_train']['departure'] = a[0]
+        self.__dict__['_train']['arrival'] = a[-1]
 
     def createurl(self):
         return 'http://mobile.viaggiatreno.it/vt_pax_internet/mobile/numero?numeroTreno=%s&tipoRicerca=numero&lang=EN' % self.pk
@@ -36,10 +41,13 @@ class Scraper(object):
             return Scraper(v)
         return v
 
+    def to_dict(self):
+        return self._train
+
 class TrainResource(Resource):
     name = fields.CharField(attribute='name')
-    #departure = fields.CharField(attribute='departure')
-    #arrival = fields.CharField(attribute='arrival') 
+    departure = fields.CharField(attribute='departure')
+    arrival = fields.CharField(attribute='arrival') 
 
     #departure_time =
     #arrival_time = 
@@ -47,10 +55,10 @@ class TrainResource(Resource):
     
     class Meta:
         resource_name = 'train'
-        object_class = Scraper
+        #object_class = Scraper
         authorization = Authorization()
 
-    def detail_uril_kwargs(self,bundle_or_obj):
+    def detail_url_kwargs(self,bundle_or_obj):
         kwargs={}
 
         if isinstance(bundle_or_obj, Bundle):
@@ -63,13 +71,12 @@ class TrainResource(Resource):
     def get_object_list(self, request):
         results = []
         for train in [ '9704','9708' ]:
-            new = Scraper(pk=train)
+            new = Scraper(train)
             results.append(new)
         return results
 
     def obj_get_list(self, bundle, **kwargs):
-        # filtering disabled for brevity
         return self.get_object_list(bundle.request)
 
     def obj_get(self, bundle, **kwargs):
-        pass
+        return Scraper(kwargs['pk'])
